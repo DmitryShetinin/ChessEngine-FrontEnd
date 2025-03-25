@@ -52,6 +52,16 @@ const Gridwrapper = () => {
         return symbols[piece.type][piece.color];
     };
 
+    const handleCellClick = (rowIndex: number, colIndex: number) => {
+        const clickedPiece = pieces[rowIndex][colIndex];
+        console.log(`Кликнули по ячейке [${rowIndex}, ${colIndex}]`);
+        if (clickedPiece) {
+            console.log('Фигура:', getPieceSymbol(clickedPiece));
+        } else {
+            console.log('Ячейка пуста');
+        }
+    };
+
     const boardColors: string[][] = Array(8)
         .fill(null)
         .map((_, row) =>
@@ -68,6 +78,7 @@ const Gridwrapper = () => {
                         <Gridcell 
                             color={cellColor} 
                             key={`${rowIndex}-${colIndex}`}
+                            onClick={() => handleCellClick(rowIndex, colIndex)}
                         >
                             {pieces[rowIndex][colIndex] && (
                                 <div class="zxc" style={{ color: pieces[rowIndex][colIndex]?.color === 'white' ? '#fff' : '#000' }}>
