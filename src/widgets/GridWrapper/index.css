@@ -3,7 +3,13 @@
     
   }
   
-
+body {
+    -ms-user-select: none; 
+    -moz-user-select: none; 
+    -webkit-user-select: none; 
+    user-select: none; 
+    background:#2c2c2c;
+}
  
 #root{
 	height: 100vh;
@@ -13,11 +19,148 @@
     position: relative;
 }
 
+ 
 
-.zxc{
-	 
-}
+:root {
+    --dark-cell: #b58863;
+    --light-cell: #f0d9b5;
+    --board-bg: #3a3a3a;
+    --glow-color: rgba(255, 215, 0, 0.3);
+  }
+  
+  /* Основные стили доски */
+  .chess-board {
+    width: 565px;
+    display: flex;
+    position: relative;
+    padding: 20px;
+    background: var(--board-bg);
+    border-radius: 10px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    margin: 20px auto;
+    z-index: 0;
+  }
+  
+  /* Анимации для клеток */
+  @keyframes cellAppear {
+    from {
+      opacity: 0;
+      transform: scale(0.5) rotate(45deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+  }
+  
+  /* Стили для фигур */
+  .piece {
+    font-size: 40px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 2;
+    user-select: none;
+  }
+  
+  /* Эффекты при наведении */
+  .grid-cell:hover {
+    transform: scale(1.15);
+    z-index: 3;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+  }
+  
+  .grid-cell:hover .piece {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 8px rgba(255,215,0,0.5));
+  }
+  
+  /* Свечение доски */
+  .chess-board::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 10px;
+    box-shadow: 0 0 40px var(--glow-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .chess-board:hover::after {
+    opacity: 0.3;
+  }
+  
+  /* Адаптация для Gridcell */
+  .grid-cell {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: cellAppear 0.1s ease backwards;
+  }
+  
+  .grid-cell:nth-child(n) {
+    animation-delay: calc(0.05s * var(--i));
+  }
+  
+  /* Дополнительные стили для MoveIndicator */
+  .move-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgba(2, 84, 247, 0.7);
+    opacity: 0.9;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.2s ease;
+  }
+  
+  .move-indicator.capture {
+    background-color: #F08080;
+    width: 40px;
+    height: 40px;
+    opacity: 0.6;
+  }
+  
 
-.zxc:hover {
-    background-color: rgba(200, 200, 200, 0.5); 
+  .piece-wrapper {
+    position: relative;
+    z-index: 2;
+    pointer-events: none; /* Разрешаем клики сквозь элемент */
+  }
+  
+  .move-indicator {
+    pointer-events: none; /* Отключаем взаимодействие с индикатором */
+    z-index: 1;
+  }
+  
+  .grid-cell {
+    transform-origin: center;
+    backface-visibility: hidden;
+  }
+  
+  /* Сохраняем область клика при анимациях */
+  .grid-cell::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+  }
+
+  
+.chess-board:hover::after {
+    opacity: 1;
 }

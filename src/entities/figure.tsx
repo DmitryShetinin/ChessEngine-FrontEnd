@@ -1,10 +1,9 @@
+
+
 export class ChessPiece {
-    constructor(
-      public type: string,
-      public color: string,
-      public position: { row: number; col: number },
-    ) {}
-  
-    // Пример метода
-    
-  }
+  constructor(
+    public type: string,
+    public color: "white" | "black",
+    public position: { row: number; col: number }, // Добавлена закрывающая фигурная скобка
+  ) {}
+}

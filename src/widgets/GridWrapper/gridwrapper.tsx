@@ -1,13 +1,25 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import styled from "styled-components";
-import { ChessPiece } from "../../entities/figure.tsx"
-import calculatePossibleMoves from "../../features/move.tsx";
-import './index.css';
+import { ChessPiece } from "../../entities/figure.tsx";
+import  {GameState  , HandleCellClick }  from "../../features/GameLogic/index.tsx"
 
-const Gridcell = styled.div<{ color: string }>`
+import Paneltools from "../Paneltools/index.tsx";
+import './index.css';
+ 
+
+ 
+ 
+
+const BOARD_SIZE = 8;
+const LIGHT_COLOR = "#eeeed2";
+const DARK_COLOR = "#769656";
+const PIECE_ORDER = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"];
+
+// Стилизованные компоненты
+const GridCell = styled.div<{ color: string }>`
   width: 50px;
   height: 50px;
-  background-color: ${(props) => props.color};
+  background-color: ${({ color }) => color};
   border: 1px solid black;
   display: flex;
   align-items: center;
@@ -15,105 +27,122 @@ const Gridcell = styled.div<{ color: string }>`
   font-size: 40px;
   cursor: pointer;
   position: relative;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    z-index: 2;
+  }
 `;
 
-const MoveIndicator = styled.div`
-  width: 20px;
-  height: 20px;
+const MoveIndicator = styled.div<{ isCapture: boolean }>`
+  width: ${({ isCapture }) => (isCapture ? '40px' : '20px')};
+  height: ${({ isCapture }) => (isCapture ? '40px' : '20px')};
   border-radius: 50%;
-  background-color: rgba(0, 200, 0, 0.3);
+  background-color: ${({ isCapture }) => (isCapture ? '#F08080' : 'rgba(2, 84, 247, 0.7)')};
+  opacity: 0.9;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 `;
 
-const createInitialPieces = (): (ChessPiece | null)[][] => {
-  const board = Array(8).fill(null).map(() => Array(8).fill(null));
-  const pieceOrder = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"];
-
-  pieceOrder.forEach((type, col) => {
-    board[0][col] = new ChessPiece(type, "white", { row: 0, col });
-    board[1][col] = new ChessPiece("pawn", "white", { row: 1, col });
-    board[7][col] = new ChessPiece(type, "black", { row: 7, col });
-    board[6][col] = new ChessPiece("pawn", "black", { row: 6, col });
-  });
-
-  return board;
+// Вспомогательные функции
+const createInitialBoard = (): (ChessPiece | null)[][] => {
+  return Array(BOARD_SIZE).fill(null).map((_, row) => 
+    Array(BOARD_SIZE).fill(null).map((_, col) => {
+      if (row === 1) return new ChessPiece("pawn", "black", { row, col });
+      if (row === 6) return new ChessPiece("pawn", "white", { row, col });
+      if (row === 0 || row === 7) {
+        const color = row === 0 ? "black" : "white";
+        return new ChessPiece(PIECE_ORDER[col], color, { row, col });
+      }
+      return null;
+    })
+  );
 };
 
-
-
 const Gridwrapper = () => {
-  const [pieces, setPieces] = useState<(ChessPiece | null)[][]>(createInitialPieces());
-  const [selectedPiece, setSelectedPiece] = useState<ChessPiece | null>(null);
-  const [possibleMoves, setPossibleMoves] = useState<{ row: number; col: number }[]>([]);
+  // Состояния
+  const [state, setState] = useState<GameState>({
+    pieces: createInitialBoard(),
+    selectedPiece: null,
+    possibleMoves: [],
+    moveTurn: "white",
+    hasPromotion: false // Добавляем в тип GameState
+  });
 
-  const getPieceSymbol = useCallback((piece: ChessPiece) => {
-    const symbols = {
-      king: { white: "♔", black: "♚" },
-      queen: { white: "♕", black: "♛" },
-      rook: { white: "♖", black: "♜" },
-      bishop: { white: "♗", black: "♝" },
-      knight: { white: "♘", black: "♞" },
-      pawn: { white: "♙", black: "♟" },
-    };
-    return symbols[piece.type][piece.color];
-  }, []);
+  // Обновляем деструктуризацию
+  const { pieces, possibleMoves, moveTurn, hasPromotion } = state;
 
+
+  const movesSet = useMemo(() => 
+    new Set(possibleMoves.map(m => `${m.row}-${m.col}`)), 
+  [possibleMoves]);
+
+
+  // Мемоизированные значения
+  const pieceSymbols = useMemo(() => ({
+    king: { white: "♔", black: "♚" },
+    queen: { white: "♕", black: "♛" },
+    rook: { white: "♖", black: "♜" },
+    bishop: { white: "♗", black: "♝" },
+    knight: { white: "♘", black: "♞" },
+    pawn: { white: "♙", black: "♟" },
+  }), []);
+
+ 
+
+  const updateState = (newState: Partial<GameState>) => {
+    setState(prev => ({ ...prev, ...newState }));
+  };
+
+  // Обработчики
   const handleCellClick = useCallback((row: number, col: number) => {
-    const clickedPiece = pieces[row][col];
+    HandleCellClick(row, col, state, updateState);
     
-    if (selectedPiece) {
-      // Move piece if valid move
-      if (possibleMoves.some(m => m.row === row && m.col === col)) {
-        const newPieces = pieces.map(row => [...row]);
-        newPieces[selectedPiece.position.row][selectedPiece.position.col] = null;
-        newPieces[row][col] = new ChessPiece(
-          selectedPiece.type,
-          selectedPiece.color,
-          { row, col }
-        );
-        setPieces(newPieces);
-      }
-      setSelectedPiece(null);
-      setPossibleMoves([]);
-    } else if (clickedPiece) {
-      setSelectedPiece(clickedPiece);
-      setPossibleMoves(calculatePossibleMoves(clickedPiece, pieces));
-    }
-  }, [selectedPiece, possibleMoves, pieces]);
+  }, [state, updateState]);
+ 
+
+ 
+
+
+
+
+  // Рендеринг
+  const renderCell = (rowIndex: number, colIndex: number) => {
+    const piece = pieces[rowIndex][colIndex];
+    const hasMove = movesSet.has(`${rowIndex}-${colIndex}`);
+    const isCapture = hasMove && !!piece;
+
+    return (
+      <GridCell
+        key={`${rowIndex}-${colIndex}`}
+        color={(rowIndex + colIndex) % 2 === 0 ? LIGHT_COLOR : DARK_COLOR}
+        onClick={() => handleCellClick(rowIndex, colIndex)}
+      >
+        {piece && (
+          <div className="piece" style={{ transition: "all 0.2s ease" }}>
+            {pieceSymbols[piece.type][piece.color]}
+          </div>
+        )}
+        {hasMove && <MoveIndicator isCapture={isCapture} />}
+      </GridCell>
+    );
+  };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      {pieces.map((row, rowIndex) => (
-        <div key={rowIndex} style={{ display: "flex" }}>
-          {row.map((_, colIndex) => (
-            <Gridcell
-          
-              key={`${rowIndex}-${colIndex}`}
-              color={(rowIndex + colIndex) % 2 === 0 ? "#f0d9b5" : "#b58863"}
-              onClick={() => handleCellClick(rowIndex, colIndex)}
-            >
-              {pieces[rowIndex][colIndex] && (
-                <div class="zxc" style={{ 
-                  color: pieces[rowIndex][colIndex]?.color === "white" ? "#fff" : "#000"
-       
-                }}>
-                  {getPieceSymbol(pieces[rowIndex][colIndex]!)}
-                </div>
-              )}
-              {possibleMoves.some(m => m.row === rowIndex && m.col === colIndex) && (
-                <MoveIndicator />
-              )}
-            </Gridcell>
-          ))}
-        </div>
-      ))}
+    <div className="chess-board">
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {pieces.map((row, rowIndex) => (
+          <div key={rowIndex} style={{ display: "flex" }}>
+            {row.map((_, colIndex) => renderCell(rowIndex, colIndex))}
+          </div>
+        ))}
+      </div>
+      <Paneltools moveTurn={moveTurn} swapPawn={state.hasPromotion} />
     </div>
   );
 };
 
 export default Gridwrapper;
-
- 

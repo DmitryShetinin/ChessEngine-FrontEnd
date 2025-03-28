@@ -1,0 +1,75 @@
+.turn-container {
+  z-index: 1;
+  font-family: 'Arial', sans-serif;
+ 
+  justify-content: center; /* Добавлено выравнивание по центру */
+  align-items: center;     /* Вертикальное выравнивание */
+  flex-wrap: nowrap;       /* Запрет переноса элементов */
+  gap: 4px;               /* Добавлен промежуток между карточками */
+  width: 130px;
+  padding: 4px;
+  background-color: #1a1a1a;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  margin: 0 auto;         /* Центрирование контейнера */
+  overflow: hidden;       /* Скрытие выходящих за границы элементов */
+}
+
+.player-card {
+  display: flex;
+  align-items: center;
+ 
+ 
+  padding: 7px;
+  border-radius: 7px;
+  transition: all 0.3s ease;
+  opacity: 0.5;
+  transform: scale(0.54);
+  transform-origin: center; /* Фиксация точки трансформации */
+  box-sizing: border-box;  /* Учет padding в ширине */
+}
+
+.player-card.active {
+  opacity: 1;
+  background-color: rgba(255,255,255,0.1);
+  z-index: 1;             /* Поднятие активной карточки */
+}
+
+/* Остальные стили остаются без изменений */
+.white.active {
+  box-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+.black.active {
+  box-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+ 
+ 
+.king {
+  font-size: 35px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+.black .king {
+  color: #333;
+}
+
+.player-name {
+  font-size: 0.65em; /* было 0.95em */
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.42px; /* было 0.7px */
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.active .king {
+  animation: pulse 0.9s infinite; /* было 1.5s */
+}
