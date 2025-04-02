@@ -69,16 +69,19 @@ const Gridwrapper = () => {
     selectedPiece: null,
     possibleMoves: [],
     moveTurn: "white",
-    hasPromotion: false // Добавляем в тип GameState
+    hasPromotion: false, // Добавляем в тип GameState
+    promotionPosition: null
   });
 
   // Обновляем деструктуризацию
-  const { pieces, possibleMoves, moveTurn, hasPromotion } = state;
+  const { pieces, possibleMoves, moveTurn, hasPromotion  } = state;
 
 
   const movesSet = useMemo(() => 
     new Set(possibleMoves.map(m => `${m.row}-${m.col}`)), 
   [possibleMoves]);
+
+ 
 
 
   // Мемоизированные значения
@@ -91,7 +94,7 @@ const Gridwrapper = () => {
     pawn: { white: "♙", black: "♟" },
   }), []);
 
- 
+  
 
   const updateState = (newState: Partial<GameState>) => {
     setState(prev => ({ ...prev, ...newState }));
@@ -99,11 +102,37 @@ const Gridwrapper = () => {
 
   // Обработчики
   const handleCellClick = useCallback((row: number, col: number) => {
-    HandleCellClick(row, col, state, updateState);
-    
-  }, [state, updateState]);
  
+    HandleCellClick(row, col, state, updateState);
+ 
+  }, [state, updateState]);
+  
 
+  const handlePieceClick = useCallback((pieceType: string) => {
+  
+    setState(prev => {
+      const newPieces = prev.pieces.map(row => [...row]);
+      const { row, col } = prev.promotionPosition!;
+      
+      newPieces[row] = [...newPieces[row]];
+      newPieces[row][col] = new ChessPiece(
+        pieceType.toLowerCase(),
+        prev.moveTurn,
+        { row, col }
+      );
+      
+      console.log(moveTurn  === "white"  ? "black" : "white")
+      return {
+        ...prev,
+        pieces: newPieces,
+        hasPromotion: false,
+        promotionPosition: null, 
+        moveTurn: prev.moveTurn === "white" ? "black" : "white"
+      };
+    });
+  }, []);
+
+  
  
 
 
@@ -140,7 +169,24 @@ const Gridwrapper = () => {
           </div>
         ))}
       </div>
-      <Paneltools moveTurn={moveTurn} swapPawn={state.hasPromotion} />
+      <Paneltools moveTurn={moveTurn}  />
+      <>
+      {hasPromotion && (
+        <div className="promotion-overlay">
+          <div className="promotion-modal">
+            {['Queen', 'Rook', 'Bishop', 'Knight'].map((piece) => (
+              <div 
+                key={piece}
+                className="promotion-option"
+                onClick={() => handlePieceClick(piece)}
+              >
+                {pieceSymbols[piece.toLowerCase()][moveTurn]}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      </>
     </div>
   );
 };

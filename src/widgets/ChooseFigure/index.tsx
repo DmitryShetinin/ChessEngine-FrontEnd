@@ -10,14 +10,16 @@ const pieces = {
   };
   
 
-const ChoosePeaces = ({ swapPawn }) => {
+const ChoosePeaces = ({ hasPromotion }) => {
     const handlePieceClick = (piece) => {
+
+     
         console.log('Selected piece:', pieces[piece]);
     };
-
+    
     return (
         <>
-            {swapPawn && 
+            {hasPromotion && 
                 <div className="chess-list">
                     <ol>
                         {Object.keys(pieces).map((piece) => (
