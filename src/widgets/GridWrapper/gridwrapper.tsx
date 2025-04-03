@@ -146,6 +146,7 @@ const Gridwrapper = () => {
 
     return (
       <GridCell
+      className="grid-cell"
         key={`${rowIndex}-${colIndex}`}
         color={(rowIndex + colIndex) % 2 === 0 ? LIGHT_COLOR : DARK_COLOR}
         onClick={() => handleCellClick(rowIndex, colIndex)}

@@ -148,50 +148,120 @@ const calculateBishopMoves = (piece: ChessPiece, pieces: (ChessPiece | null)[][]
     return moves;
 };
 
+
+
+ 
+const isSquareUnderAttack = (
+    row: number,
+    col: number,
+    color: 'white' | 'black',
+    pieces: (ChessPiece | null)[][]
+): boolean => {
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const piece = pieces[r][c];
+            if (!piece || piece.color === color || piece.type === "king") continue;
+
+            let moves: { row: number; col: number }[] = [];
+            
+            // Специальная обработка для пешек
+            if (piece.type === "pawn") {
+                const direction = piece.color === 'white' ? -1 : 1;
+                const attackMoves = [
+                    { row: r + direction, col: c - 1 },
+                    { row: r + direction, col: c + 1 }
+                ];
+                
+                // Фильтруем ходы за пределы доски
+                moves = attackMoves.filter(m => 
+                    m.row >= 0 && m.row < 8 && 
+                    m.col >= 0 && m.col < 8
+                );
+            } else {
+                moves = calculatePossibleMoves(piece, pieces);
+            }
+
+            if (moves.some(m => m.row === row && m.col === col)) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
+
 const calculateKingMoves = (piece: ChessPiece, pieces: (ChessPiece | null)[][]) => {
     const moves: { row: number; col: number }[] = [];
     const { row, col } = piece.position;
+    const color = piece.color;
+    
+    // Основные направления движения
     const directions = [
         [1, 1], [1, -1], [-1, 1], [-1, -1],
         [1, 0], [-1, 0], [0, 1], [0, -1]
     ];
 
-    // Находим позицию вражеского короля
-    let enemyKingPos: { row: number, col: number } | null = null;
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const p = pieces[r][c];
-            if (p?.type === 'king' && p.color !== piece.color) {
-                enemyKingPos = { row: r, col: c };
-                break;
-            }
-        }
-        if (enemyKingPos) break;
-    }
-
+    // Проверка обычных ходов
     directions.forEach(([dr, dc]) => {
         const newRow = row + dr;
         const newCol = col + dc;
         
         if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) return;
-
-        // Проверка расстояния до вражеского короля
-        if (enemyKingPos) {
-            const rowDiff = Math.abs(newRow - enemyKingPos.row);
-            const colDiff = Math.abs(newCol - enemyKingPos.col);
-            if (rowDiff <= 1 && colDiff <= 1) return;
-        }
-
-        if (!pieces[newRow][newCol]) {
+        
+        const targetPiece = pieces[newRow][newCol];
+        if (targetPiece?.color === color) return;
+        
+        if (!isSquareUnderAttack(newRow, newCol, color, pieces)) {
             moves.push({ row: newRow, col: newCol });
-        } else {
-            if (pieces[newRow][newCol]?.color !== piece.color) {
-                moves.push({ row: newRow, col: newCol });
-            }
         }
     });
 
-    return moves;
+    
+    // Фильтруем ходы, оставляя только безопасные
+    return moves.filter(move => {
+        // Создаем копию доски для проверки шаха
+        const tempPieces = pieces.map(r => [...r]);
+        tempPieces[row][col] = null;
+        tempPieces[move.row][move.col] = piece;
+        
+        return !isInCheck(color, tempPieces);
+    });
+};
+
+// Проверка на шах
+const isInCheck = (color: 'white' | 'black', pieces: (ChessPiece | null)[][]) => {
+    let kingPos: { row: number, col: number } | null = null;
+    
+    // Находим позицию короля
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = pieces[r][c];
+            if (p?.type === 'king' && p.color === color) {
+                kingPos = { row: r, col: c };
+                break;
+            }
+        }
+        if (kingPos) break;
+    }
+    
+    return kingPos && isSquareUnderAttack(kingPos.row, kingPos.col, color, pieces);
+};
+
+// Проверка на мат
+const isCheckmate = (color: 'white' | 'black', pieces: (ChessPiece | null)[][]) => {
+    if (!isInCheck(color, pieces)) return false;
+
+    // Проверяем все возможные ходы
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const piece = pieces[r][c];
+            if (piece?.color === color) {
+                const moves = calculatePossibleMoves(piece, pieces);
+                if (moves.length > 0) return false;
+            }
+        }
+    }
+    
+    return true;
 };
 
 
@@ -221,6 +291,7 @@ const calculateKnightMoves = (piece: ChessPiece, pieces: (ChessPiece | null)[][]
             }
         }
     });
+ 
    
     return moves;
 };
