@@ -16,18 +16,17 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-    position: relative;
+  position: relative;
+
+  --dark-cell: #b58863;
+  --light-cell: #f0d9b5;
+  --board-bg: #3a3a3a;
+  --glow-color: rgba(255, 215, 0, 0.3);
 }
 
  
 
-:root {
-    --dark-cell: #b58863;
-    --light-cell: #f0d9b5;
-    --board-bg: #3a3a3a;
-    --glow-color: rgba(255, 215, 0, 0.3);
-  }
-  
+ 
   /* Основные стили доски */
   .chess-board {
     width: 565px;
@@ -223,7 +222,7 @@ body {
 }
 
 .promotion-modal {
-  background: white;
+  background: #3a3a3a;
   padding: 20px;
   border-radius: 10px;
   display: flex;
@@ -234,10 +233,12 @@ body {
   font-size: 40px;
   cursor: pointer;
   padding: 10px;
-  border: 2px solid #ccc;
+  border: 1px solid #f8e808;
   border-radius: 5px;
 }
 
 .promotion-option:hover {
   background: #eee;
+  transform:  scale(1.1);
+  filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
 }
