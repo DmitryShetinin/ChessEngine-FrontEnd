@@ -4,10 +4,10 @@ type Direction = [number, number];
 type Position = { row: number; col: number };
 
 // Общие утилиты
-const isWithinBoard = (row: number, col: number): boolean => 
+const isWithinBoard = (row: number, col: number): boolean =>
   row >= 0 && row < 8 && col >= 0 && col < 8;
 
-const getOppositeColor = (color: 'white' | 'black'): 'white' | 'black' => 
+const getOppositeColor = (color: 'white' | 'black'): 'white' | 'black' =>
   color === 'white' ? 'black' : 'white';
 
 // Базовые движения для фигур
@@ -24,9 +24,9 @@ const calculateLineMoves = (
     for (let step = 1; step <= maxSteps; step++) {
       const newRow = row + dr * step;
       const newCol = col + dc * step;
-      
+
       if (!isWithinBoard(newRow, newCol)) break;
-      
+
       const target = pieces[newRow][newCol];
       if (!target) {
         moves.push({ row: newRow, col: newCol });
@@ -47,98 +47,113 @@ export default function calculatePossibleMoves(
   piece: ChessPiece,
   pieces: (ChessPiece | null)[][]
 ) {
-  const { type, position: { row, col }, color } = piece;
-  const opponentColor = getOppositeColor(color);
-
+  const { type } = piece;
+ 
   switch (type) {
-    case 'pawn': {
-      const moves: Position[] = [];
-      const direction = color === 'white' ? -1 : 1;
-      const startRow = color === 'white' ? 6 : 1;
-      
-      // Обычные ходы
-      if (isWithinBoard(row + direction, col) && !pieces[row + direction][col]) {
-        moves.push({ row: row + direction, col });
-        
-        // Двойной ход
-        if (row === startRow && !pieces[row + 2 * direction][col]) {
-          moves.push({ row: row + 2 * direction, col });
-        }
-      }
-
-      // Взятия
-      [[direction, -1], [direction, 1]].forEach(([dr, dc]) => {
-        const newRow = row + dr;
-        const newCol = col + dc;
-        if (isWithinBoard(newRow, newCol)) {
-          const target = pieces[newRow][newCol];
-          if (target?.color === opponentColor) {
-            moves.push({ row: newRow, col: newCol });
-          }
-        }
-      });
-
-      return moves;
-    }
-
+    case 'pawn':
+      return calculatePawnMoves(piece, pieces);
     case 'rook':
-      return calculateLineMoves(piece, pieces, [
-        [1, 0], [-1, 0], [0, 1], [0, -1]
-      ]);
-
+      return calculateRookMoves(piece, pieces);
     case 'bishop':
-      return calculateLineMoves(piece, pieces, [
-        [1, 1], [1, -1], [-1, 1], [-1, -1]
-      ]);
-
+      return calculateBishopMoves(piece, pieces);
     case 'queen':
-      return [
-        ...calculateLineMoves(piece, pieces, [
-          [1, 0], [-1, 0], [0, 1], [0, -1]
-        ]),
-        ...calculateLineMoves(piece, pieces, [
-          [1, 1], [1, -1], [-1, 1], [-1, -1]
-        ])
-      ];
-
+      return calculateQueenMoves(piece, pieces);
     case 'knight':
-      return [
-        [2, 1], [2, -1], [-2, 1], [-2, -1],
-        [1, 2], [-1, 2], [1, -2], [-1, -2]
-      ]
-        .map(([dr, dc]) => ({ 
-          row: row + dr, 
-          col: col + dc 
-        }))
-        .filter(pos => 
-          isWithinBoard(pos.row, pos.col) &&
-          pieces[pos.row][pos.col]?.color !== color
-        );
-
-    case 'king': {
-      const moves = [
-        [1, 0], [-1, 0], [0, 1], [0, -1],
-        [1, 1], [1, -1], [-1, 1], [-1, -1]
-      ]
-        .map(([dr, dc]) => ({ 
-          row: row + dr, 
-          col: col + dc 
-        }))
-        .filter(pos => 
-          isWithinBoard(pos.row, pos.col) &&
-          pieces[pos.row][pos.col]?.color !== color
-        );
-
-      // Фильтрация безопасных ходов
-      return moves.filter(move => 
-        !isSquareUnderAttack( { row: move.row, col:move.col }, color, pieces)
-      );
-    }
-
+      return calculateKnightMoves(piece, pieces);
+    case 'king':
+      return calculateKingMoves(piece, pieces);
     default:
       return [];
+
+
+ 
   }
-};
+}
+
+// Отдельные функции для каждой фигуры
+function calculatePawnMoves(piece: ChessPiece, pieces: (ChessPiece | null)[][]) {
+  const { position: { row, col }, color } = piece;
+  const moves: Position[] = [];
+  const direction = color === 'white' ? -1 : 1;
+  const startRow = color === 'white' ? 6 : 1;
+
+  // Обычные ходы
+  if (isWithinBoard(row + direction, col) && !pieces[row + direction][col]) {
+    moves.push({ row: row + direction, col });
+
+    // Двойной ход
+    if (row === startRow && !pieces[row + 2 * direction][col]) {
+      moves.push({ row: row + 2 * direction, col });
+    }
+  }
+
+  // Взятия
+  [[direction, -1], [direction, 1]].forEach(([dr, dc]) => {
+    const newRow = row + dr;
+    const newCol = col + dc;
+    if (isWithinBoard(newRow, newCol)) {
+      const target = pieces[newRow][newCol];
+      if (target?.color === getOppositeColor(color)) {
+        moves.push({ row: newRow, col: newCol });
+      }
+    }
+  });
+
+  return moves;
+}
+
+function calculateRookMoves(piece: ChessPiece, pieces: (ChessPiece | null)[][]) {
+  return calculateLineMoves(piece, pieces, [
+    [1, 0], [-1, 0], [0, 1], [0, -1]
+  ]);
+}
+
+function calculateBishopMoves(piece: ChessPiece, pieces: (ChessPiece | null)[][]) {
+  return calculateLineMoves(piece, pieces, [
+    [1, 1], [1, -1], [-1, 1], [-1, -1]
+  ]);
+}
+
+function calculateQueenMoves(piece: ChessPiece, pieces: (ChessPiece | null)[][]) {
+  return [
+    ...calculateLineMoves(piece, pieces, [[1, 0], [-1, 0], [0, 1], [0, -1]]),
+    ...calculateLineMoves(piece, pieces, [[1, 1], [1, -1], [-1, 1], [-1, -1]])
+  ];
+}
+
+function calculateKnightMoves(piece: ChessPiece, pieces: (ChessPiece | null)[][]) {
+  const { position: { row, col }, color } = piece;
+  return [
+    [2, 1], [2, -1], [-2, 1], [-2, -1],
+    [1, 2], [-1, 2], [1, -2], [-1, -2]
+  ]
+    .map(([dr, dc]) => ({ row: row + dr, col: col + dc }))
+    .filter(pos =>
+      isWithinBoard(pos.row, pos.col) &&
+      pieces[pos.row][pos.col]?.color !== color
+    );
+}
+
+function calculateKingMoves(piece: ChessPiece, pieces: (ChessPiece | null)[][]) {
+  const { position: { row, col }, color } = piece;
+  const moves = [
+    [1, 0], [-1, 0], [0, 1], [0, -1],
+    [1, 1], [1, -1], [-1, 1], [-1, -1]
+  ]
+  .map(([dr, dc]) => ({ row: row + dr, col: col + dc }))
+  .filter(pos =>
+    isWithinBoard(pos.row, pos.col) &&
+    pieces[pos.row][pos.col]?.color !== color
+  );
+
+ 
+  return moves.filter(move =>
+    !isSquareUnderAttack({ row: move.row, col: move.col }, color, pieces)
+  );
+}
+
+
+
 
 // Проверка безопасности клетки
 const isSquareUnderAttack = (
@@ -148,11 +163,11 @@ const isSquareUnderAttack = (
 ): boolean => {
   const attackerColor = getOppositeColor(defenderColor);
 
-  return pieces.some((row, r) => 
+  return pieces.some((row, r) =>
     row.some((piece, c) => {
-      if (!piece || piece.color !== attackerColor  || piece?.type == "king" ) 
+      if (!piece || piece.color !== attackerColor || piece?.type == "king")
         return false;
-      
+
       // Специальная обработка пешек
       if (piece.type === 'pawn') {
         const direction = piece.color === 'white' ? -1 : 1;
@@ -163,8 +178,8 @@ const isSquareUnderAttack = (
       }
 
       return calculatePossibleMoves(piece, pieces)
-        .some(move => 
-          move.row === targetPos.row && 
+        .some(move =>
+          move.row === targetPos.row &&
           move.col === targetPos.col
         );
     })
@@ -176,7 +191,7 @@ export const isInCheck = (
   color: 'white' | 'black',
   pieces: (ChessPiece | null)[][]
 ): boolean => {
-  const kingPos = pieces.flat().find(p => 
+  const kingPos = pieces.flat().find(p =>
     p?.type === 'king' && p.color === color
   )?.position;
 
@@ -189,9 +204,9 @@ export const isCheckmate = (
 ): boolean => {
   if (!isInCheck(color, pieces)) return false;
 
-  return pieces.flat().every(piece => 
-    !piece || 
-    piece.color !== color || 
+  return pieces.flat().every(piece =>
+    !piece ||
+    piece.color !== color ||
     calculatePossibleMoves(piece, pieces).length === 0
   );
 };

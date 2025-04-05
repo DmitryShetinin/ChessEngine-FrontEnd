@@ -51,13 +51,18 @@ const MoveIndicator = styled.div<{ isCapture: boolean }>`
 const createInitialBoard = (): (ChessPiece | null)[][] => {
   return Array(BOARD_SIZE).fill(null).map((_, row) => 
     Array(BOARD_SIZE).fill(null).map((_, col) => {
-      if (row === 1) return new ChessPiece("pawn", "black", { row, col });
-      if (row === 6) return new ChessPiece("pawn", "white", { row, col });
-      if (row === 0 || row === 7) {
-        const color = row === 0 ? "black" : "white";
-        return new ChessPiece(PIECE_ORDER[col], color, { row, col });
+
+      if(row == 1 || row == 6){
+        const color = row === 1 ? "black" : "white";
+        return new ChessPiece("pawn", color, { row, col });
       }
-      return null;
+  
+      if (!(row === 0 || row === 7))  return null; 
+        
+      const color = row === 0 ? "black" : "white";
+      return new ChessPiece(PIECE_ORDER[col], color, { row, col });
+  
+      
     })
   );
 };
@@ -104,7 +109,7 @@ const Gridwrapper = () => {
   const handleCellClick = useCallback((row: number, col: number) => {
  
     HandleCellClick(row, col, state, updateState);
- 
+    
   }, [state, updateState]);
   
 
@@ -121,7 +126,7 @@ const Gridwrapper = () => {
         { row, col }
       );
       
-      console.log(moveTurn  === "white"  ? "black" : "white")
+ 
       return {
         ...prev,
         pieces: newPieces,
