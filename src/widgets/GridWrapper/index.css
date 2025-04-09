@@ -242,3 +242,41 @@ body {
   transform:  scale(1.1);
   filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
 }
+
+.grid-cell {
+  width: 50px;
+  height: 50px;
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.grid-cell:hover {
+  transform: scale(1.05);
+  z-index: 2;
+}
+
+
+.move-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(2, 84, 247, 0.7);
+  opacity: 0.9;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.move-indicator.capture {
+  width: 40px;
+  height: 40px;
+  opacity: 0.9;
+  background-color: #fd6a6a;
+}

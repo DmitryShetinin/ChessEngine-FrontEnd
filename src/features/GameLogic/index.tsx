@@ -1,17 +1,17 @@
-import { ChessPiece } from "../../entities/figure.tsx";
+import { ChessPiece, pieceFactory } from "../../entities/figure.tsx";
 import calculatePossibleMoves from "../FigureLogic/move.tsx";
 import { produce } from 'immer';
 
 
 export type GameState = {
-  pieces: (ChessPiece | null)[][];
+  pieces: (ChessPiece)[][];
   selectedPiece: ChessPiece | null;
   possibleMoves: Array<{ row: number; col: number }>;
   moveTurn: "white" | "black";
   hasPromotion: boolean;
   promotionPosition: { row: number; col: number };
-  isCastlingPossibleWhite : boolean;
-  isCastlingPossibleBlack: boolean;
+
+  
 };
 
 
@@ -29,7 +29,7 @@ export const HandleCellClick = (
   const movesSet = new Set(state.possibleMoves.map(m => `${m.row}-${m.col}`));
 
   if (hasPromotion) return;
-
+  if(!pieces) return; 
   if (clickedPiece?.color === moveTurn) {
     return updateState({
       pieces: pieces, // Сохраняем текущее состояние доски
@@ -44,21 +44,12 @@ export const HandleCellClick = (
   if (!movesSet.has(`${row}-${col}`)) return;
 
 
-  if(selectedPiece?.type == "king"){
-    if(selectedPiece.color === 'black') 
-      return updateState({isCastlingPossibleBlack: false});
-
-    return updateState({isCastlingPossibleWhite: false})
-  }
-  console.log(selectedPiece)
+ 
+   
   updateState({
     pieces: produce(pieces, draft => {
       draft[selectedPiece!.position.row][selectedPiece!.position.col] = null;
-      draft[row][col] = new ChessPiece(
-        selectedPiece!.type,
-        selectedPiece!.color,
-        { row, col }
-      );
+      draft[row][col] = pieceFactory(selectedPiece!.type,  selectedPiece!.color, { row, col });
     }),
 
 
