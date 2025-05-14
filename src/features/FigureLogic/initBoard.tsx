@@ -1,6 +1,6 @@
-import { ChessPiece, Pawn, pieceFactory } from "../../entities/figure.tsx";
-
-
+import { ChessPiece, pieceFactory } from "../../entities/figure.tsx";
+ 
+ 
  
   
 
@@ -19,7 +19,7 @@ export const createInitialBoard = (): (ChessPiece | null)[][] => {
         // Пешки
         if(row === 1 || row === 6) {
           const color = row === 1 ? "black" : "white";
-          return new Pawn(color, { row, col });
+          return pieceFactory('pawn', color, { row, col });
         }
     
         // Остальные фигуры

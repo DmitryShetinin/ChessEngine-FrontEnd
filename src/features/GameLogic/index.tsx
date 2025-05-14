@@ -1,5 +1,6 @@
-import { ChessPiece, King, pieceFactory } from "../../entities/figure.tsx";
+import { ChessPiece, findKingPosition, pieceFactory } from "../../entities/figure.tsx";
 import calculatePossibleMoves from "../FigureLogic/move.tsx";
+import { King } from "../../entities/pieces/King.tsx";
 import { produce } from 'immer';
 
 
@@ -46,22 +47,29 @@ export const HandleCellClick = (
   if (!movesSet.has(`${row}-${col}`)) return;
 
   if (selectedPiece instanceof King) {
-    const direction = col > selectedPiece.position.col ? 1 : -1; // Определяем направление
-    const newPieces = selectedPiece.castling(pieces, direction);
 
-    // Обновляем позицию короля в объекте
-    selectedPiece.position = { 
-        row: selectedPiece.position.row, 
-        col: selectedPiece.position.col + 2 * direction 
-    };
+  
+  // Получаем разрешенные позиции для рокировки
+  const castlingMoves = selectedPiece.mayPerformCastling(pieces);
+  
+  // Проверяем что кликнули именно на позицию рокировки
+  const isCastlingMove = castlingMoves.some(m => m.row === row && m.col === col);
+  
+  if (isCastlingMove) {
+      // Определяем направление рокировки
+      const direction = col > selectedPiece.position.col ? 1 : -1;
+      
+      // Выполняем рокировку
+      const newPieces = selectedPiece.castling(pieces, direction);
 
-    updateState({
-        pieces: newPieces,
-        moveTurn: moveTurn === "white" ? "black" : "white",
-        selectedPiece: null, // Сбрасываем выбор
-        possibleMoves: []
-    });
-    return;
+    return updateState({
+          pieces: newPieces,
+          moveTurn: moveTurn === "white" ? "black" : "white",
+          selectedPiece: null,
+          possibleMoves: []
+      });
+  }
+ 
   }
   updateState({
     pieces: produce(pieces, draft => {
