@@ -11,7 +11,7 @@ const PIECE_ORDER = ["rook", "knight", "bishop", "queen", "king", "bishop", "kni
 const BOARD_SIZE = 8;
 
 export const createInitialBoard = (): (ChessPiece | null)[][] => {
-    // Фабрика для создания фигур по типу
+
    
   
     return Array(BOARD_SIZE).fill(null).map((_, row) => 

@@ -5,9 +5,10 @@ import  {GameState  , HandleCellClick }  from "../../features/GameLogic/index.ts
 
 import Paneltools from "../Paneltools/index.tsx";
 import './index.css';
-import { createInitialBoard } from "../../features/FigureLogic/createaNewFigure.tsx";
+ 
 import { pieceSymbols } from "../../shared/index.tsx";
 import { pieceFactory } from "../../entities/figure.tsx";
+import { createInitialBoard } from "../../features/FigureLogic/initBoard.tsx";
  
 
  
@@ -61,7 +62,7 @@ const Gridwrapper = () => {
   
 
   const handlePieceClick = useCallback((pieceType: string) => {
- 
+    console.log(1)
     setState(prev => {
       const newPieces = prev.pieces.map(row => [...row]);
       const { row, col } = prev.promotionPosition!;

@@ -1,212 +1,76 @@
 * {
-    box-sizing: border-box;
-    
-  }
-  
-body {
-    -ms-user-select: none; 
-    -moz-user-select: none; 
-    -webkit-user-select: none; 
-    user-select: none; 
-    background:#2c2c2c;
+  box-sizing: border-box;
 }
- 
-#root{
-	height: 100vh;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-  position: relative;
 
+body {
+  user-select: none;
+  background: #2c2c2c;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   --dark-cell: #b58863;
   --light-cell: #f0d9b5;
   --board-bg: #3a3a3a;
   --glow-color: rgba(255, 215, 0, 0.3);
 }
 
- 
-
- 
-  /* Основные стили доски */
-  .chess-board {
-    width: 565px;
-    display: flex;
-    position: relative;
-    padding: 20px;
-    background: var(--board-bg);
-    border-radius: 10px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-    margin: 20px auto;
-    z-index: 0;
-  }
-  
- 
-  
-  /* Стили для фигур */
-  .piece {
-    font-size: 40px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    transition: all 0.2s ease;
-    position: relative;
-    z-index: 2;
-    user-select: none;
-  }
-  
-  /* Эффекты при наведении */
-  .grid-cell:hover {
-    transform: scale(1.15);
-    z-index: 3;
-    box-shadow: 0 0 20px rgba(255,255,255,0.2);
-  }
-  
-  .grid-cell:hover .piece {
-    transform: scale(1.2);
-    filter: drop-shadow(0 0 8px rgba(255,215,0,0.5));
-  }
-  
-  /* Свечение доски */
-  .chess-board::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 10px;
-    box-shadow: 0 0 40px var(--glow-color);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  
-  .chess-board:hover::after {
-    opacity: 0.3;
-  }
-  
-  /* Адаптация для Gridcell */
-  .grid-cell {
-    width: 50px;
-    height: 50px;
-    border: 1px solid #555;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: cellAppear 0.5s ease backwards;
-  }
-  
-
-  /* Анимации для клеток */
-  @keyframes cellAppear {
-    from {
-      opacity: 0;
-      transform: scale(0.5) rotate(45deg);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) rotate(0);
-    }
-  }
-
-  .grid-cell:nth-child(n) {
-    animation-delay: calc(0.05s * var(--i));
-  }
-  
-  /* Дополнительные стили для MoveIndicator */
-  .move-indicator {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: rgba(2, 84, 247, 0.7);
-    opacity: 0.9;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    transition: all 0.4s ease;
-  }
-  
-  .move-indicator.capture {
-    background-color: #F08080;
-    width: 40px;
-    height: 40px;
-    opacity: 0.6;
-  }
-  
-
-  .piece-wrapper {
-    position: relative;
-    z-index: 2;
-    pointer-events: none; /* Разрешаем клики сквозь элемент */
-  }
-  
-  .move-indicator {
-    pointer-events: none; /* Отключаем взаимодействие с индикатором */
-    z-index: 1;
-  }
-  
-  .grid-cell {
-    transform-origin: center;
-    backface-visibility: hidden;
-  }
-  
-  /* Сохраняем область клика при анимациях */
-  .grid-cell::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 0;
-  }
-
-  
-.chess-board:hover::after {
-    opacity: 1;
+.chess-board {
+  width: 565px;
+  display: flex;
+  position: relative;
+  padding: 20px;
+  background: var(--board-bg);
+  border-radius: 10px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+  margin: 20px auto;
 }
 
- 
- 
+.grid-cell {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
 
-/* Иконки для фигур */
-.chess-list li:nth-child(1)::after { content: "♖"; }
-.chess-list li:nth-child(2)::after { content: "♘"; }
-.chess-list li:nth-child(3)::after { content: "♗"; }
-.chess-list li:nth-child(4)::after { content: "♕"; }
-
-/* Анимация при наведении */
-.chess-list li:hover {
-    background: #5a5a5a;
-    transform: translateX(15px) scale(1.05);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  
 }
 
-/* Эффект "подсветки" псевдоэлементов */
-.chess-list li:hover::before {
-    background: #e6d7a8;
-    transform: translateY(-50%) scale(1.1);
+.piece {
+  font-size: 40px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease;
+  user-select: none;
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.chess-list li:hover::after {
-    color: #fff;
-    text-shadow: 0 0 8px rgba(255,255,255,0.5);
+.move-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(2, 84, 247, 0.7);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
 }
 
-/* Плавное появление элементов */
-@keyframes slideIn {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
+.move-indicator.capture {
+  width: 40px;
+  height: 40px;
+  background-color: #fd6a6a;
 }
-
- 
-
-.chess-list li:nth-child(1) { animation-delay: 0.1s; }
-.chess-list li:nth-child(2) { animation-delay: 0.3s; }
-.chess-list li:nth-child(3) { animation-delay: 0.5s; }
-.chess-list li:nth-child(4) { animation-delay: 0.7s; }
-
 
 .promotion-overlay {
   position: fixed;
@@ -235,48 +99,35 @@ body {
   padding: 10px;
   border: 1px solid #f8e808;
   border-radius: 5px;
-}
-
-.promotion-option:hover {
-  background: #eee;
-  transform:  scale(1.1);
-  filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
-}
-
-.grid-cell {
-  width: 50px;
-  height: 50px;
-  border: 1px solid black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  cursor: pointer;
-  position: relative;
   transition: transform 0.2s ease;
 }
 
+/* Анимации */
+@keyframes cellAppear {
+  from {
+      opacity: 0;
+      transform: scale(0.5) rotate(45deg);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+  }
+}
+
+
+
+
+/* Ховер-эффекты */
 .grid-cell:hover {
   transform: scale(1.05);
-  z-index: 2;
+  z-index: 22;
 }
 
-
-.move-indicator {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: rgba(2, 84, 247, 0.7);
-  opacity: 0.9;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.grid-cell:hover .piece {
+  transform: scale(1.2);
 }
 
-.move-indicator.capture {
-  width: 40px;
-  height: 40px;
-  opacity: 0.9;
-  background-color: #fd6a6a;
+.promotion-option:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
 }

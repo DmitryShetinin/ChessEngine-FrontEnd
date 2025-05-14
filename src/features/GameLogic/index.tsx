@@ -1,10 +1,10 @@
-import { ChessPiece, pieceFactory } from "../../entities/figure.tsx";
+import { ChessPiece, King, pieceFactory } from "../../entities/figure.tsx";
 import calculatePossibleMoves from "../FigureLogic/move.tsx";
 import { produce } from 'immer';
 
 
 export type GameState = {
-  pieces: (ChessPiece)[][];
+  pieces: (ChessPiece  | null)[][];
   selectedPiece: ChessPiece | null;
   possibleMoves: Array<{ row: number; col: number }>;
   moveTurn: "white" | "black";
@@ -24,12 +24,14 @@ export const HandleCellClick = (
 ) => {
 
   const { pieces, selectedPiece, moveTurn, hasPromotion } = state;
+ 
+  if (hasPromotion) return;
+
 
   const clickedPiece = pieces[row][col];
   const movesSet = new Set(state.possibleMoves.map(m => `${m.row}-${m.col}`));
 
-  if (hasPromotion) return;
-  if(!pieces) return; 
+ 
   if (clickedPiece?.color === moveTurn) {
     return updateState({
       pieces: pieces, // Сохраняем текущее состояние доски
@@ -43,21 +45,44 @@ export const HandleCellClick = (
 
   if (!movesSet.has(`${row}-${col}`)) return;
 
+  if (selectedPiece instanceof King) {
+    const pos = selectedPiece.disableCastling();
+  
+    updateState({
+      pieces: produce(pieces, draft => {
+        // Удаляем ладью в исходной позиции и перемещаем её
+        draft[pos[0].row][pos[0].col] = null;
+        draft[pos[1].row][pos[1].col] = pieceFactory('rook', selectedPiece.color, { row: pos[1].row, col: pos[1].col });
+  
+        // Удаляем короля из текущей позиции и перемещаем в новую
+        draft[selectedPiece.position.row][selectedPiece.position.col] = null;
+        draft[row][col] = pieceFactory(selectedPiece.type, selectedPiece.color, { row, col });
 
- 
-   
+        
+      }),
+
+      moveTurn: moveTurn === "white" ? "black" : "white",
+
+
+      selectedPiece: selectedPiece,  
+      possibleMoves: []
+    });
+  
+    return;
+  }
+  
   updateState({
     pieces: produce(pieces, draft => {
       draft[selectedPiece!.position.row][selectedPiece!.position.col] = null;
       draft[row][col] = pieceFactory(selectedPiece!.type,  selectedPiece!.color, { row, col });
     }),
-
+    
 
 
     moveTurn: moveTurn === "white" ? "black" : "white",
 
 
-    selectedPiece: selectedPiece, // Исправлено: сбрасываем выбор после хода
+    selectedPiece: selectedPiece,  
     possibleMoves: []
 
   });
