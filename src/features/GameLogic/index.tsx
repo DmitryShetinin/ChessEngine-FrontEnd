@@ -46,31 +46,23 @@ export const HandleCellClick = (
   if (!movesSet.has(`${row}-${col}`)) return;
 
   if (selectedPiece instanceof King) {
-    const pos = selectedPiece.disableCastling();
-  
+    const direction = col > selectedPiece.position.col ? 1 : -1; // Определяем направление
+    const newPieces = selectedPiece.castling(pieces, direction);
+
+    // Обновляем позицию короля в объекте
+    selectedPiece.position = { 
+        row: selectedPiece.position.row, 
+        col: selectedPiece.position.col + 2 * direction 
+    };
+
     updateState({
-      pieces: produce(pieces, draft => {
-        // Удаляем ладью в исходной позиции и перемещаем её
-        draft[pos[0].row][pos[0].col] = null;
-        draft[pos[1].row][pos[1].col] = pieceFactory('rook', selectedPiece.color, { row: pos[1].row, col: pos[1].col });
-  
-        // Удаляем короля из текущей позиции и перемещаем в новую
-        draft[selectedPiece.position.row][selectedPiece.position.col] = null;
-        draft[row][col] = pieceFactory(selectedPiece.type, selectedPiece.color, { row, col });
-
-        
-      }),
-
-      moveTurn: moveTurn === "white" ? "black" : "white",
-
-
-      selectedPiece: selectedPiece,  
-      possibleMoves: []
+        pieces: newPieces,
+        moveTurn: moveTurn === "white" ? "black" : "white",
+        selectedPiece: null, // Сбрасываем выбор
+        possibleMoves: []
     });
-  
     return;
   }
-  
   updateState({
     pieces: produce(pieces, draft => {
       draft[selectedPiece!.position.row][selectedPiece!.position.col] = null;

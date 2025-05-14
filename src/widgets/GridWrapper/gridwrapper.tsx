@@ -61,8 +61,8 @@ const Gridwrapper = () => {
   }, [state, updateState]);
   
 
-  const handlePieceClick = useCallback((pieceType: string) => {
-    console.log(1)
+  const handleChooseLableClick = useCallback((pieceType: string) => {
+ 
     setState(prev => {
       const newPieces = prev.pieces.map(row => [...row]);
       const { row, col } = prev.promotionPosition!;
@@ -134,7 +134,7 @@ const Gridwrapper = () => {
               <div 
                 key={piece}
                 className="promotion-option"
-                onClick={() => handlePieceClick(piece)}
+                onClick={() => handleChooseLableClick(piece)}
               >
                 {pieceSymbols[piece][moveTurn]}
               </div>

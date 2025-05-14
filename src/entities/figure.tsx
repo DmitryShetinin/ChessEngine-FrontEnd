@@ -1,5 +1,5 @@
 import { pieceSymbols } from "../shared/index.tsx";
-
+import { produce } from 'immer';
 
 export const pieceFactory = (type: string, color: "white" | "black", position: { row: number; col: number }): ChessPiece => {
   switch (type) {
@@ -167,8 +167,7 @@ export class King extends ChessPiece {
 
       for (let col = startCol; col < endCol; col++) {
         if (pieces[currentRow][col]) {
-          isPathClear = false;
-          break;
+          return [];
         }
       }
 
@@ -198,13 +197,30 @@ export class King extends ChessPiece {
     return safeCastlingPositions;
   }
 
-  public castling(pieces: (ChessPiece | null)[][]): (ChessPiece | null)[][] {
+  public castling(pieces: (ChessPiece | null)[][], direction: number): (ChessPiece | null)[][] {
     if (!this.canCastle) return pieces;
 
+    const rookPos = this.newRookPosition; // Метод, возвращающий позиции ладьи
+    const newKingCol = this.position.col + 2 * direction; // Новая позиция короля
 
+    return produce(pieces, draft => {
+        // Перемещение ладьи
+        draft[rookPos[0].row][rookPos[0].col] = null;
+        draft[rookPos[1].row][rookPos[1].col] = pieceFactory(
+            'rook', 
+            this.color, 
+            { row:rookPos[1].row, col:rookPos[1].col }
+        );
 
-    return pieces;
-  }
+        // Перемещение короля
+        draft[this.position.row][this.position.col] = null;
+        draft[this.position.row][newKingCol] = pieceFactory(
+            this.type, 
+            this.color, 
+            { row: this.position.row, col: newKingCol }
+        );
+    });
+}
 
   public getPossibleMoves(pieces: (ChessPiece | null)[][]): Position[] {
     const { position: { row, col }, color } = this;
