@@ -1,5 +1,5 @@
-import { ChessPiece, getOppositeColor, isWithinBoard, Position } from "../figure.tsx";
- 
+import {  getOppositeColor, isWithinBoard, Position } from "../figure.tsx";
+import { ChessPiece, IBoard } from "../game/Types.tsx";
 
  
 
@@ -21,7 +21,7 @@ export class Pawn extends ChessPiece {
       super("pawn", color, position);
     }
   
-    public getPossibleMoves(pieces: (ChessPiece)[][]): Position[] {
+    public getPossibleMoves(pieces: IBoard): Position[] {
   
   
       const moves: Position[] = [];
@@ -33,23 +33,23 @@ export class Pawn extends ChessPiece {
       return moves;
     }
   
-    private addForwardMoves(moves: Position[], pieces: ChessPiece[][]) {
+    private addForwardMoves(moves: Position[], pieces: IBoard) {
       const newRow = this.position.row + this.direction;
       if (!isWithinBoard(newRow, this.position.col)) return;
   
-      if (!pieces[newRow][this.position.col]) {
+      if (!pieces.getPiece({ row: newRow, col: this.position.col })) {
         moves.push({ row: newRow, col: this.position.col });
   
         if (this.position.row === this.startRow) {
           const doubleRow = newRow + this.direction;
-          if (!pieces[doubleRow][this.position.col]) {
+          if (!pieces.getPiece({ row: doubleRow, col: this.position.col })) {
             moves.push({ row: doubleRow, col: this.position.col });
           }
         }
       }
     }
   
-    private addCaptureMoves(moves: Position[], pieces: ChessPiece[][]) {
+    private addCaptureMoves(moves: Position[], pieces : IBoard) {
       const captureDirections = [[this.direction, -1], [this.direction, 1]];
   
       for (const [dr, dc] of captureDirections) {
@@ -58,7 +58,7 @@ export class Pawn extends ChessPiece {
   
         if (!isWithinBoard(newRow, newCol)) continue;
   
-        const target = pieces[newRow][newCol];
+        const target = pieces.getPiece({ row: newRow, col: newCol});
         if (target?.color === getOppositeColor(this.color)) {
           moves.push({ row: newRow, col: newCol });
         }

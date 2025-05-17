@@ -1,6 +1,7 @@
  
-import { isWithinBoard, ChessPiece, Position } from "../figure.tsx";
- 
+import { isWithinBoard, Position } from "../figure.tsx";
+import { ChessPiece, IBoard } from "../game/Types.tsx";
+
 
 
 export class Knight extends ChessPiece {
@@ -10,7 +11,7 @@ export class Knight extends ChessPiece {
       super("knight", color, position);
     }
   
-    public getPossibleMoves(pieces: (ChessPiece)[][]): Position[] {
+    public getPossibleMoves(pieces: IBoard): Position[] {
       const { position: { row, col }, color } = this;
       return [
         [2, 1], [2, -1], [-2, 1], [-2, -1],
@@ -19,7 +20,7 @@ export class Knight extends ChessPiece {
         .map(([dr, dc]) => ({ row: row + dr, col: col + dc }))
         .filter(pos =>
           isWithinBoard(pos.row, pos.col) &&
-          pieces[pos.row][pos.col]?.color !== color
+          pieces.getPiece({row: pos.row, col: pos.col}) ?.color !== color
         );
     }
   

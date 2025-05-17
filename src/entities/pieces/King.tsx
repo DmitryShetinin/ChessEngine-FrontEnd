@@ -1,7 +1,8 @@
-import { ChessPiece, Position, getOppositeColor, isSquareAttackedByPawn, isWithinBoard, pieceFactory } from "../figure.tsx";
+import {  Position, getOppositeColor, isSquareAttackedByPawn, isWithinBoard, pieceFactory } from "../figure.tsx";
+import { IBoard } from "../game/Types.tsx";
 import { Rook } from "./Rook.tsx";
 import { produce } from 'immer';
-
+import { ChessPiece } from "../game/Types.tsx"
 
 
 
@@ -33,51 +34,14 @@ export class King extends ChessPiece {
     return this.canCastle;
   }
 
-  public isCheck(pieces: (ChessPiece | null)[][]): boolean {
+  public isCheck(pieces: IBoard): boolean {
     return isSquareUnderAttack(this.position, this.color, pieces);
   }
 
-  public isCheckmate(pieces: (ChessPiece | null)[][]): boolean {
-    if (!this.isCheck(pieces)) return false;
-
-    // Проверяем возможные ходы короля
-    const kingMoves = this.getPossibleMoves(pieces);
-    if (kingMoves.length > 0) return false;
-
-    // Проверяем возможность защиты другими фигурами
-    return !this.canAnyPieceDefend(pieces);
-  }
-
-  private canAnyPieceDefend(pieces: (ChessPiece | null)[][]): boolean {
-    const defenderColor = this.color;
-    
-    return pieces.some((row, rowIndex) => 
-      row.some((piece, colIndex) => {
-        if (!piece || piece.color !== defenderColor || piece === this) return false;
-
-        // Проверяем все возможные ходы фигуры
-        const moves = piece.getPossibleMoves(pieces);
-        
-        return moves.some(move => {
-          // Создаем копию доски
-          const newBoard = produce(pieces, draft => {
-            draft[piece.position.row][piece.position.col] = null;
-            draft[move.row][move.col] = pieceFactory(
-              piece.type,
-              piece.color,
-              { row: move.row, col: move.col }
-            );
-          });
-
-          // Проверяем остался ли шах после этого хода
-          return !this.isCheck(newBoard);
-        });
-      })
-    );
-  }
+ 
 
   
-  public mayPerformCastling(pieces: (ChessPiece | null)[][]): Position[] {
+  public mayPerformCastling(pieces: IBoard): Position[] {
     if (!this.canCastle || this.isCheck(pieces)) return [];
     
     const safeCastlingPositions: Position[] = [];
@@ -86,7 +50,7 @@ export class King extends ChessPiece {
 
     // Проверяем обе возможные рокировки
     [0, 7].forEach(rookCol => {
-        const rook = pieces[currentRow][rookCol];
+        const rook = pieces.getPiece({row: currentRow, col: rookCol});
         
         if (rook instanceof Rook ) {
             const direction = rookCol === 0 ? -1 : 1;
@@ -111,17 +75,17 @@ export class King extends ChessPiece {
     return safeCastlingPositions;
 }
 
-private isCastlingPathClear(rook: Rook, currentRow: number, pieces: (ChessPiece | null)[][]): boolean {
+private isCastlingPathClear(rook: Rook, currentRow: number, pieces: IBoard): boolean {
   const start = Math.min(this.position.col, rook.position.col) + 1;
   const end = Math.max(this.position.col, rook.position.col);
   
   for (let col = start; col < end; col++) {
-      if (pieces[currentRow][col] !== null) return false;
+      if (pieces.getPiece({row: currentRow, col: col}) !== null) return false;
   }
   return true;
 }
 
-private isCastlingPathSafe(direction: number, currentRow: number, pieces: (ChessPiece | null)[][]): boolean {
+private isCastlingPathSafe(direction: number, currentRow: number, pieces: IBoard): boolean {
   // Проверяем безопасность клеток для короля
   const steps = direction === 1 ? [1, 2] : [-1, -2];
   return steps.every(step => {
@@ -133,31 +97,34 @@ private isCastlingPathSafe(direction: number, currentRow: number, pieces: (Chess
       );
   });
 }
-public castling(pieces: (ChessPiece | null)[][], direction: number): (ChessPiece | null)[][] {
+
+
+
+public castling(pieces: IBoard, direction: number): IBoard {
   return produce(pieces, draft => {
       // Перемещение короля
       const newKingCol = this.position.col + 2 * direction;
-      draft[this.position.row][this.position.col] = null;
-      draft[this.position.row][newKingCol] = pieceFactory(
+      draft.setPiece({row: this.position.row, col: this.position.col}, null);
+      draft.setPiece({row: this.position.row, col: newKingCol}, pieceFactory(
           'king',
           this.color,
           { row: this.position.row, col: newKingCol }
-      );
+      ));   
 
       // Перемещение ладьи
       const rookCol = direction === 1 ? 7 : 0;
       const newRookCol = this.position.col + direction;
-      draft[this.position.row][rookCol] = null;
-      draft[this.position.row][newRookCol] = pieceFactory(
+      draft.setPiece({row: this.position.row, col: rookCol}, null);
+       draft.setPiece({row: this.position.row, col: newRookCol}, pieceFactory(
           'rook',
           this.color,
           { row: this.position.row, col: newRookCol }
-      );
+      )); 
   });
 }
 
 
-  public getPossibleMoves(pieces: (ChessPiece | null)[][]): Position[] {
+  public getPossibleMoves(pieces: IBoard): Position[] {
     const { position: { row, col }, color } = this;
 
     // Основные возможные движения для короля
@@ -168,7 +135,7 @@ public castling(pieces: (ChessPiece | null)[][], direction: number): (ChessPiece
       .map(([dr, dc]) => ({ row: row + dr, col: col + dc }))
       .filter(pos =>
         isWithinBoard(pos.row, pos.col) &&
-        pieces[pos.row][pos.col]?.color !== color
+        pieces.getPiece({row: pos.row, col: pos.col})?.color !== color
       );
 
     // Получаем безопасные координаты для рокировки
@@ -187,31 +154,27 @@ public castling(pieces: (ChessPiece | null)[][], direction: number): (ChessPiece
 }
 
 
+
 const isSquareUnderAttack = (
   targetPos: Position,
   defenderColor: 'white' | 'black',
-  pieces: (ChessPiece | null)[][]
+  board: IBoard
 ): boolean => {
   const attackerColor = getOppositeColor(defenderColor);
 
-  return pieces.some((row, r) =>
-    row.some((piece, c) => {
-      if (!piece || piece.color !== attackerColor || piece?.type == "king")
-        return false;
+  return board.some((piece, position) => {
+      if (!piece || piece.color !== attackerColor || piece.type === "king") 
+          return false;
 
-      // Специальная обработка пешек
-      return piece.type === 'pawn'
-        ? isSquareAttackedByPawn(piece, targetPos)
-        : piece.getPossibleMoves(pieces).some(m =>
-          m.row === targetPos.row && m.col === targetPos.col
-        );
+      // Для пешек используем специальную проверку
+      if (piece.type === 'pawn') {
+          return isSquareAttackedByPawn(piece, targetPos);
+      }
 
-
-    })
-  );
-
-
-
-
-
+      // Для остальных фигур проверяем возможные ходы
+      return piece.getPossibleMoves(board).some(move => 
+          move.row === targetPos.row && 
+          move.col === targetPos.col
+      );
+  });
 };

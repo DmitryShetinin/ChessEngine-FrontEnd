@@ -1,4 +1,5 @@
-import { ChessPiece } from "./pieces/ChessPiece.tsx";
+import { ChessPiece, IBoard } from "../entities/game/Types.tsx";
+
  
 import { Pawn } from "./pieces/Pawn.tsx";
 import { Knight } from "./pieces/Knight.tsx";
@@ -7,7 +8,8 @@ import { Rook } from "./pieces/Rook.tsx";
 import { Bishop } from "./pieces/Bishop.tsx";
 import { King } from "./pieces/King.tsx";
 
-export const pieceFactory = (type: string, color: "white" | "black", position: { row: number; col: number }): ChessPiece => {
+export const pieceFactory = (type: string, color: "white" | "black", position: Position): ChessPiece => {
+ 
   switch (type) {
     case 'pawn': return new Pawn(color, position);
     case 'rook': return new Rook(color, position);
@@ -21,21 +23,7 @@ export const pieceFactory = (type: string, color: "white" | "black", position: {
 
 
  
-export const findKingPosition = (
-  pieces: (ChessPiece | null)[][], 
-  color: 'white' | 'black'
-): Position | null => {
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      const piece = pieces[row][col];
-      if (piece?.type === 'king' && piece.color === color) {
-        return { row, col };
-      }
-    }
-  }
-  return null;
-};
-
+ 
 
 type Direction = [number, number];
 export type Position = { row: number; col: number };
@@ -59,7 +47,7 @@ export const isSquareAttackedByPawn = (piece: ChessPiece, targetPos: Position) =
 
 export const calculateLineMoves = (
   piece: ChessPiece,
-  pieces: (ChessPiece)[][],
+  pieces:  IBoard,
   directions: Direction[],
   maxSteps: number = 8
 ): Position[] => {
@@ -73,7 +61,7 @@ export const calculateLineMoves = (
 
       if (!isWithinBoard(newRow, newCol)) break;
 
-      const target = pieces[newRow][newCol];
+      const target = pieces.getPiece({row: newRow, col: newCol});
       if (!target) {
         moves.push({ row: newRow, col: newCol });
       } else {

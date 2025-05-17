@@ -44,6 +44,7 @@ body {
 }
 
 .piece {
+ 
   font-size: 40px;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
   transition: transform 0.2s ease;
@@ -51,6 +52,16 @@ body {
   position: relative;
   z-index: 2;
   pointer-events: none;
+}
+
+
+.board{
+
+  position: relative;
+
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
 }
 
 .move-indicator {
@@ -120,6 +131,7 @@ body {
 /* Ховер-эффекты */
 .grid-cell:hover {
   transform: scale(1.05);
+
   z-index: 22;
 }
 

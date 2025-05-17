@@ -1,4 +1,5 @@
-import { ChessPiece, Position, calculateLineMoves } from "../figure.tsx";
+import {  Position, calculateLineMoves } from "../figure.tsx";
+import { ChessPiece, IBoard } from "../game/Types.tsx";
 
 export class Bishop extends ChessPiece {
 
@@ -7,7 +8,7 @@ export class Bishop extends ChessPiece {
       super("bishop", color, position);
     }
   
-    public getPossibleMoves(pieces: (ChessPiece)[][]): Position[] {
+    public getPossibleMoves(pieces:  IBoard): Position[] {
       return calculateLineMoves(this, pieces, [
         [1, 1], [1, -1], [-1, 1], [-1, -1]
       ]);
